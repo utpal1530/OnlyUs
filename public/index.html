@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Us & Always</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Login Section -->
+    <div id="login-screen">
+        <div class="glass-card">
+            <h1>Welcome Back</h1>
+            <p>Select your name to start chatting</p>
+            <div class="name-buttons">
+                <button class="name-btn" data-name="utpal">Utpal</button>
+                <button class="name-btn" data-name="khushi">Khushi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Section -->
+    <div id="chat-screen" class="hidden">
+        <header>
+            <h2>Us & Always ❤️</h2>
+        </header>
+        <ul id="messages"></ul>
+        <div class="popup-quicks">
+            <button type="button" class="popup-msg" data-msg="I love you so much babuu">I love you so much babuu</button>
+            <button type="button" class="popup-msg" data-msg="I miss you">I miss you</button>
+        </div>
+        <div id="emoji-picker" class="emoji-picker hidden">
+            <div class="emoji-grid" id="emoji-grid"></div>
+        </div>
+        <form id="chat-form">
+            <button type="button" id="emoji-btn" class="emoji-btn">😊</button>
+            <input id="message-input" autocomplete="off" placeholder="Type a message..." />
+            <button type="submit">Send</button>
+        </form>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
