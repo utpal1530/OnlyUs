@@ -62,8 +62,16 @@ io.on('connection', (socket) => {
     io.emit('chat message', msg);
   });
 
-  socket.on('typing', (isTyping) => {
-    socket.broadcast.emit('typing', isTyping);
+  socket.on('typing', (user) => {
+    socket.broadcast.emit('typing', user);
+  });
+
+  socket.on('stop typing', () => {
+    socket.broadcast.emit('stop typing');
+  });
+
+  socket.on('animate', (type) => {
+    io.emit('animate', type); // Broadcast to all
   });
 
   socket.on('disconnect', () => {

@@ -231,3 +231,113 @@ function scrollToBottom() {
         messagesArea.scrollTop = messagesArea.scrollHeight;
     }, 100);
 }
+
+// ---- UI EFFECTS ----
+
+// 1. Firefly Background
+function initFireflies() {
+    const blobsContainer = document.querySelector('.background-blobs');
+    for (let i = 0; i < 20; i++) { // 20 fireflies
+        const firefly = document.createElement('div');
+        firefly.classList.add('firefly');
+
+        // Random start position
+        firefly.style.left = Math.random() * 100 + '%';
+        firefly.style.top = Math.random() * 100 + '%';
+
+        // Random destination
+        const dx = (Math.random() - 0.5) * 200 + 'px';
+        const dy = (Math.random() - 0.5) * 200 + 'px';
+        firefly.style.setProperty('--dx', dx);
+        firefly.style.setProperty('--dy', dy);
+
+        // Random delay
+        firefly.style.animationDelay = Math.random() * 5 + 's';
+
+        blobsContainer.appendChild(firefly);
+    }
+}
+initFireflies();
+
+// 2. Floating Hearts
+function spawnHeart() {
+    const heart = document.createElement('div');
+    heart.classList.add('floating-heart');
+    heart.innerText = '❤️';
+    // Randomize slightly
+    heart.style.left = Math.random() * 80 + 10 + '%'; // Random X
+    const size = Math.random() * 1.5 + 1; // Random size
+    heart.style.transform = `scale(${size})`;
+
+    document.body.appendChild(heart);
+
+    setTimeout(() => {
+        heart.remove();
+    }, 4000);
+}
+
+// 3. Typing Indicator
+let typingTimeout;
+messageInput.addEventListener('input', () => {
+    socket.emit('typing', username);
+
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+        socket.emit('stop typing');
+    }, 1000);
+});
+
+const typingDiv = document.createElement('div');
+typingDiv.className = 'typing-indicator hidden';
+typingDiv.innerHTML = `
+    <span>Khushi is typing</span>
+    <div class="typing-dots">
+        <span></span><span></span><span></span>
+    </div>
+`;
+messagesArea.parentNode.insertBefore(typingDiv, messagesArea.nextSibling); // Insert above input area
+
+socket.on('typing', (user) => {
+    if (user && user !== username) {
+        typingDiv.querySelector('span').innerText = `${user} is typing`;
+        typingDiv.classList.remove('hidden');
+    }
+});
+
+socket.on('stop typing', () => {
+    typingDiv.classList.add('hidden');
+});
+
+// Animation Listener
+socket.on('animate', (type) => {
+    if (type === 'hearts') {
+        for (let i = 0; i < 5; i++) setTimeout(spawnHeart, i * 200);
+    }
+});
+
+// Update sendMessage to trigger hearts
+const heartTriggers = ['i love you', 'love', '❤️', 'miss you'];
+
+// Overwrite sendMessage to add visual effects hook
+// We grab the existing DOM element and logic is already bound.
+// The easiest way is to add a listener to the send button that runs BEFORE the main one?
+// No, let's just intercept the clicks.
+// Or actually, let's just listen to 'chat message' on client side!
+// When *I* send a message, socket.on('chat message') fires for me too? Yes.
+// So I can just check in the existing socket.on('chat message') handler!
+
+// Wait, I need to modify the socket.on handler to check for hearts.
+// Or I can just add a NEW listener for 'chat message' since listeners stack.
+
+socket.on('chat message', (msg) => {
+    // Check for heart triggers
+    if (heartTriggers.some(t => msg.text.toLowerCase().includes(t))) {
+        // Only trigger if it's a new message (not history load)
+        // This handler runs for live messages.
+        // We want to sync the animation? The backend now emits 'animate' if we wanted.
+        // But the previous implementation emits 'animate' manually? 
+        // No, I didn't update sendMessage to emit 'animate'.
+        // Let's just do it locally here for everyone who receives the message.
+        for (let i = 0; i < 5; i++) setTimeout(spawnHeart, i * 200);
+    }
+});
