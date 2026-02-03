@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Us ❤️</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <!-- Login Overlay -->
+    <div id="login-overlay">
+        <div class="glass-panel login-box">
+            <h1>Who are you? ❤️</h1>
+            <div class="profile-selection">
+                <button id="btn-utpal" class="profile-btn utpal-theme">
+                    <span class="emoji">🤴</span> Utpal
+                </button>
+                <button id="btn-khushi" class="profile-btn khushi-theme">
+                    <span class="emoji">👸</span> Khushi
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Container -->
+    <div id="chat-container" class="hidden">
+        <header class="chat-header glass-panel">
+            <div class="header-content">
+                <div class="title-row">
+                    <div class="status-dot"></div>
+                    <h2>Us and Forever ❤️</h2>
+                </div>
+                <div id="days-count" class="days-subtitle"></div>
+            </div>
+        </header>
+
+        <div id="messages-area">
+            <!-- Messages will appear here -->
+            <div class="message system">
+                <p>Welcome to your private space. ✨</p>
+            </div>
+        </div>
+
+        <emoji-picker class="dark hidden"></emoji-picker>
+
+        <div class="quick-replies">
+            <button class="quick-reply-btn" data-msg="I love you babuu ❤️">I love you babuu ❤️</button>
+            <button class="quick-reply-btn" data-msg="I miss you 🥺">I miss you 🥺</button>
+        </div>
+
+        <div class="input-area glass-panel">
+            <div class="input-wrapper">
+                <button id="emoji-btn">😊</button>
+                <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off">
+            </div>
+            <button id="send-btn">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
