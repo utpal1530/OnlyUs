@@ -6,11 +6,14 @@ const { Server } = require("socket.io");
 const io = new Server(server);
 const path = require('path');
 const fs = require('fs');
+// const multer = require('multer'); // Removed
 
 app.use(express.static(path.join(__dirname, 'public')));
 
 const MESSAGES_FILE = path.join(__dirname, 'messages.json');
+
 let messageHistory = [];
+
 
 // Load messages from file on startup
 function loadMessages() {
