@@ -1,0 +1,7 @@
+{
+    "ignore": [
+        "messages.json",
+        "messages.bak.json",
+        "*.tmp"
+    ]
+}

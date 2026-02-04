@@ -33,6 +33,11 @@ function loginAs(name) {
         username = name;
         loginOverlay.style.opacity = '0';
 
+        // Request Notification Permission
+        if ('Notification' in window && Notification.permission !== 'granted') {
+            Notification.requestPermission();
+        }
+
         renderMessages();
 
         setTimeout(() => {
@@ -162,6 +167,16 @@ socket.on('chat message', (msg) => {
     if (username) {
         appendMessage(msg);
         scrollToBottom();
+
+        // Show Notification if message is not from me and window is hidden or specific
+        if (msg.user !== username && 'Notification' in window && Notification.permission === 'granted') {
+            // Don't notify if tab is focused? Actually user asked for "each and every notification". 
+            // Usually we check document.hidden but let's just send it.
+            new Notification(`${msg.user} ❤️`, {
+                body: msg.text,
+                silent: false // Try to make sound if possible
+            });
+        }
     }
 });
 

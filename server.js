@@ -11,30 +11,52 @@ const fs = require('fs');
 app.use(express.static(path.join(__dirname, 'public')));
 
 const MESSAGES_FILE = path.join(__dirname, 'messages.json');
+const MESSAGES_BACKUP = path.join(__dirname, 'messages.bak.json');
 
 let messageHistory = [];
-
 
 // Load messages from file on startup
 function loadMessages() {
   try {
     if (fs.existsSync(MESSAGES_FILE)) {
       const data = fs.readFileSync(MESSAGES_FILE, 'utf8');
-      messageHistory = JSON.parse(data);
-      console.log(`Loaded ${messageHistory.length} messages from history`);
+      try {
+        messageHistory = JSON.parse(data);
+        console.log(`[Persistence] Loaded ${messageHistory.length} messages successfully.`);
+      } catch (parseError) {
+        console.error('[Persistence] CRITICAL: JSON Parse Error reading messages.json:', parseError);
+        // Try to backup the corrupt file
+        try {
+          fs.copyFileSync(MESSAGES_FILE, MESSAGES_FILE + '.corrupt-' + Date.now());
+          console.log('[Persistence] Corrupt file backed up.');
+        } catch (e) { console.error('[Persistence] Failed to backup corrupt file:', e); }
+
+        messageHistory = []; // Start fresh if corrupt
+      }
+    } else {
+      console.log('[Persistence] No existing messages file found. Starting fresh.');
+      messageHistory = [];
     }
   } catch (err) {
-    console.error('Error loading messages:', err);
+    console.error('[Persistence] Error loading messages:', err);
     messageHistory = [];
   }
 }
 
-// Save messages to file
+// Save messages to file safely
 function saveMessages() {
   try {
-    fs.writeFileSync(MESSAGES_FILE, JSON.stringify(messageHistory, null, 2));
+    // 1. Write to a temporary file first
+    const tempFile = MESSAGES_FILE + '.tmp';
+    fs.writeFileSync(tempFile, JSON.stringify(messageHistory, null, 2));
+
+    // 2. Rename temp file to actual file (atomic operation on POSIX, usually safe on Windows)
+    fs.renameSync(tempFile, MESSAGES_FILE);
+
+    // Optional: Log every save or just periodically? Let's log for debugging now.
+    console.log(`[Persistence] Saved ${messageHistory.length} messages.`);
   } catch (err) {
-    console.error('Error saving messages:', err);
+    console.error('[Persistence] Error saving messages:', err);
   }
 }
 
