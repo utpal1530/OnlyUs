@@ -316,6 +316,12 @@ emoji-picker {
     border-radius: 20px;
 }
 
+.voice-label {
+    font-size: 0.8rem;
+    opacity: 0.8;
+    margin-bottom: 4px;
+}
+
 .message.my-message {
     align-self: flex-end;
     background: var(--my-msg-bg);
@@ -380,6 +386,18 @@ emoji-picker {
     border-color: var(--accent-color);
 }
 
+.surprise-btn {
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+    color: #3b0c3f;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(255, 153, 204, 0.5);
+}
+
+.surprise-btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 16px rgba(255, 153, 204, 0.7);
+}
+
 /* Reply Indicator */
 #reply-indicator {
     display: flex;
@@ -394,6 +412,43 @@ emoji-picker {
 
 #reply-indicator.hidden {
     display: none;
+}
+
+/* Recording Indicator */
+#recording-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    margin: 0 20px 8px;
+    border-left: 4px solid #ff004c;
+    background: rgba(0, 0, 0, 0.35);
+    font-size: 0.85rem;
+}
+
+#recording-indicator.hidden {
+    display: none;
+}
+
+#recording-indicator .rec-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #ff004c;
+    box-shadow: 0 0 8px #ff004c;
+    animation: recPulse 1s infinite alternate;
+}
+
+@keyframes recPulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: scale(1.4);
+        opacity: 1;
+    }
 }
 
 .reply-content {
@@ -502,22 +557,31 @@ emoji-picker {
     margin-right: 2px;
 }
 
-#emoji-btn {
-    font-size: 1.5rem;
+/* Mic button */
+#mic-btn {
+    font-size: 1.3rem;
     cursor: pointer;
     width: 35px;
     height: 40px;
-    margin-right: 2px;
+    margin-right: 6px;
+    border-radius: 999px;
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-#emoji-btn:hover {
+#emoji-btn:hover,
+#mic-btn:hover {
     transform: scale(1.1);
 }
 
-
-
-#emoji-btn:hover {
-    transform: scale(1.1);
+#mic-btn.recording {
+    background: rgba(255, 0, 76, 0.2);
+    color: #ff004c;
+    box-shadow: 0 0 10px rgba(255, 0, 76, 0.7);
 }
 
 /* Beautiful Send Button */
@@ -605,6 +669,12 @@ emoji-picker {
         width: 30px;
         height: 35px;
         font-size: 1.2rem;
+    }
+
+    #mic-btn {
+        width: 30px;
+        height: 35px;
+        font-size: 1.1rem;
     }
 
     .input-area input {

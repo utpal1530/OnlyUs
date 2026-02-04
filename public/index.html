@@ -56,6 +56,7 @@
         <div class="quick-replies">
             <button class="quick-reply-btn" data-msg="I love you babuu ❤️">I love you babuu ❤️</button>
             <button class="quick-reply-btn" data-msg="I miss you 🥺">I miss you 🥺</button>
+            <button id="surprise-btn" class="quick-reply-btn surprise-btn">Send Surprise 💌</button>
         </div>
 
         <div id="reply-indicator" class="glass-panel hidden">
@@ -66,12 +67,18 @@
             <button id="cancel-reply">✕</button>
         </div>
 
+        <div id="recording-indicator" class="glass-panel hidden">
+            <span class="rec-dot"></span>
+            <span id="recording-text">Recording 0:00</span>
+        </div>
+
         <div class="input-area glass-panel">
             <div class="input-wrapper">
                 <button id="emoji-btn">😊</button>
+                <button id="mic-btn" aria-label="Record voice message">🎤</button>
                 <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off">
             </div>
-            <button id="send-btn">
+            <button id="send-btn" aria-label="Send message">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                         stroke-linejoin="round" />

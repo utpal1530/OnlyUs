@@ -7,6 +7,7 @@ const btnKhushi = document.getElementById('btn-khushi');
 const chatContainer = document.getElementById('chat-container');
 const messageInput = document.getElementById('message-input');
 const sendBtn = document.getElementById('send-btn');
+const micBtn = document.getElementById('mic-btn');
 const messagesArea = document.getElementById('messages-area');
 const daysCountSpan = document.getElementById('days-count');
 const emojiBtn = document.getElementById('emoji-btn');
@@ -15,10 +16,21 @@ const replyIndicator = document.getElementById('reply-indicator');
 const replyToUserSpan = document.getElementById('reply-to-user');
 const replyPreviewP = document.getElementById('reply-preview');
 const cancelReplyBtn = document.getElementById('cancel-reply');
+const recordingIndicator = document.getElementById('recording-indicator');
+const recordingTextSpan = document.getElementById('recording-text');
+const surpriseBtn = document.getElementById('surprise-btn');
 
 let username = '';
 let storedMessages = [];
 let replyingTo = null; // Object { user, text }
+
+// Voice recording state
+let mediaRecorder = null;
+let isRecording = false;
+let audioChunks = [];
+let recordingStartTime = null;
+let recordingTimerId = null;
+const MAX_RECORDING_SECONDS = 60;
 
 // Relationship Start Date Logic
 const startDate = new Date('2026-01-06'); // Updated to 2026
@@ -128,12 +140,35 @@ function clearReply() {
 
 cancelReplyBtn.addEventListener('click', clearReply);
 
+// Surprise Love Note Logic
+const surpriseMessages = [
+    'You are my favourite notification every day ❤️',
+    'If I could choose again, I would still choose you a thousand times 💞',
+    'Thank you for being my safe place and my happiness 🥺❤️',
+    'Every time my phone lights up with your name, my heart does too 💗',
+    'I still get butterflies when I talk to you 🦋❤️',
+    'You + Me = Forever my favourite maths 🤍',
+    'No distance, no fight, nothing can change how much I love you 🫶',
+    'You are my best decision, my peace, and my madness in one person 💕'
+];
+
+if (surpriseBtn) {
+    surpriseBtn.addEventListener('click', () => {
+        if (!username) return;
+        const msg =
+            surpriseMessages[Math.floor(Math.random() * surpriseMessages.length)];
+        sendMessage(msg);
+        socket.emit('animate', 'hearts');
+    });
+}
+
 // Send Message Logic
 function sendMessage(textOverride = null) {
     const text = textOverride || messageInput.value.trim();
     if (text && username) {
         const messageData = {
             user: username,
+            type: 'text',
             text: text,
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             replyTo: replyingTo // Add reply context
@@ -154,6 +189,122 @@ messageInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') sendMessage();
 });
 
+// ---- Voice Recording Logic ----
+function updateMicUi() {
+    if (!micBtn) return;
+    if (isRecording) {
+        micBtn.classList.add('recording');
+        micBtn.textContent = '⏹';
+    } else {
+        micBtn.classList.remove('recording');
+        micBtn.textContent = '🎤';
+    }
+}
+
+function startRecordingTimer() {
+    if (!recordingIndicator || !recordingTextSpan) return;
+    recordingStartTime = Date.now();
+    recordingIndicator.classList.remove('hidden');
+
+    const update = () => {
+        const elapsedMs = Date.now() - recordingStartTime;
+        const totalSeconds = Math.floor(elapsedMs / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        recordingTextSpan.textContent = `Recording ${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+        if (totalSeconds >= MAX_RECORDING_SECONDS && isRecording && mediaRecorder) {
+            // Auto-stop when max duration reached
+            mediaRecorder.stop();
+        }
+    };
+
+    update(); // initial
+    recordingTimerId = setInterval(update, 1000);
+}
+
+function stopRecordingTimer() {
+    if (recordingTimerId) {
+        clearInterval(recordingTimerId);
+        recordingTimerId = null;
+    }
+    if (recordingIndicator) {
+        recordingIndicator.classList.add('hidden');
+    }
+}
+
+async function toggleRecording() {
+    if (!username) return; // Require login
+
+    // Stop recording if currently recording
+    if (isRecording && mediaRecorder) {
+        mediaRecorder.stop();
+        isRecording = false;
+        updateMicUi();
+        stopRecordingTimer();
+        return;
+    }
+
+    // Start new recording
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioChunks = [];
+        mediaRecorder = new MediaRecorder(stream);
+
+        mediaRecorder.ondataavailable = (event) => {
+            if (event.data && event.data.size > 0) {
+                audioChunks.push(event.data);
+            }
+        };
+
+        mediaRecorder.onstop = () => {
+            stopRecordingTimer();
+            isRecording = false;
+            updateMicUi();
+            const blob = new Blob(audioChunks, { type: 'audio/webm' });
+
+            // Clean up stream tracks
+            stream.getTracks().forEach(track => track.stop());
+
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64Audio = reader.result; // Data URL
+
+                const messageData = {
+                    user: username,
+                    type: 'audio',
+                    text: '🎤 Voice message', // Fallback text for previews / notifications
+                    audio: base64Audio,
+                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    replyTo: replyingTo
+                };
+
+                socket.emit('chat message', messageData);
+                clearReply();
+            };
+            reader.readAsDataURL(blob);
+        };
+
+        mediaRecorder.start();
+        isRecording = true;
+        updateMicUi();
+        startRecordingTimer();
+    } catch (err) {
+        console.error('Error accessing microphone:', err);
+        alert('Could not access microphone. Please allow microphone permission.');
+        isRecording = false;
+        updateMicUi();
+        stopRecordingTimer();
+    }
+}
+
+if (micBtn && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    micBtn.addEventListener('click', toggleRecording);
+} else if (micBtn) {
+    // Hide mic button if not supported
+    micBtn.style.display = 'none';
+}
+
 // Receive Message Logic
 socket.on('load history', (messages) => {
     storedMessages = messages;
@@ -163,6 +314,9 @@ socket.on('load history', (messages) => {
 });
 
 socket.on('chat message', (msg) => {
+    // Ensure default type for older messages
+    if (!msg.type) msg.type = 'text';
+
     storedMessages.push(msg);
     if (username) {
         appendMessage(msg);
@@ -213,7 +367,7 @@ function appendMessage(msg) {
     }
 
     // Render Reply Quote
-    if (msg.replyTo) {
+    if (msg.replyTo && msg.replyTo.text) {
         contentHtml += `
             <div class="reply-quote">
                 <strong>${msg.replyTo.user}</strong>
@@ -222,7 +376,17 @@ function appendMessage(msg) {
         `;
     }
 
-    contentHtml += `${msg.text}`;
+    if (msg.type === 'audio' && msg.audio) {
+        contentHtml += `
+            <div class="voice-label">🎧 Voice message</div>
+            <audio controls class="voice-msg-player">
+                <source src="${msg.audio}" type="audio/webm">
+                Your browser does not support the audio element.
+            </audio>
+        `;
+    } else {
+        contentHtml += `${msg.text}`;
+    }
 
     messageDiv.innerHTML = contentHtml;
     messagesArea.appendChild(messageDiv);
