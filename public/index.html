@@ -3,7 +3,11 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0f0c29">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Us ❤️</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
@@ -15,6 +19,22 @@
         <div class="blob blob-1"></div>
         <div class="blob blob-2"></div>
         <div class="blob blob-3"></div>
+    </div>
+
+    <!-- PIN Protection Overlay -->
+    <div id="pin-overlay" class="hidden">
+        <div class="glass-panel pin-box">
+            <h1>Enter PIN 🔐</h1>
+            <p class="pin-subtitle">Protect your special moments</p>
+            <div class="pin-inputs">
+                <input type="password" maxlength="1" class="pin-digit" data-index="0">
+                <input type="password" maxlength="1" class="pin-digit" data-index="1">
+                <input type="password" maxlength="1" class="pin-digit" data-index="2">
+                <input type="password" maxlength="1" class="pin-digit" data-index="3">
+            </div>
+            <p id="pin-error" class="pin-error hidden">Incorrect PIN. Try again.</p>
+            <button id="unlock-btn" class="unlock-btn">Unlock ❤️</button>
+        </div>
     </div>
 
     <!-- Login Overlay -->
@@ -41,17 +61,60 @@
                     <h2>Us and Forever ❤️</h2>
                 </div>
                 <div id="days-count" class="days-subtitle"></div>
+                <div id="partner-status" class="partner-status">
+                    <span class="status-indicator offline"></span>
+                    <span class="status-text">Offline</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button id="search-btn" class="header-btn" title="Search messages">🔍</button>
+                <button id="starred-btn" class="header-btn" title="Special moments">⭐</button>
+                <button id="settings-btn" class="header-btn" title="Settings">⚙️</button>
             </div>
         </header>
 
+        <!-- Search Bar -->
+        <div id="search-bar" class="search-bar hidden">
+            <div class="search-input-wrapper glass-panel">
+                <input type="text" id="search-input" placeholder="Search messages..." autocomplete="off">
+                <button id="close-search">✕</button>
+            </div>
+            <div id="search-results" class="search-results hidden"></div>
+        </div>
+
+        <!-- Starred Messages Panel -->
+        <div id="starred-panel" class="starred-panel hidden">
+            <div class="starred-header glass-panel">
+                <h3>⭐ Special Moments</h3>
+                <button id="close-starred">✕</button>
+            </div>
+            <div id="starred-messages" class="starred-messages">
+                <p class="empty-starred">No starred messages yet. Double-tap a message to star it! ⭐</p>
+            </div>
+        </div>
+
         <div id="messages-area">
-            <!-- Messages will appear here -->
             <div class="message system">
                 <p>Welcome to your private space. ✨</p>
+            </div>
+            <div id="load-more" class="load-more hidden">
+                <button id="load-more-btn">Load older messages ↓</button>
             </div>
         </div>
 
         <emoji-picker class="dark hidden"></emoji-picker>
+
+        <!-- Reaction Picker -->
+        <div id="reaction-picker" class="reaction-picker hidden">
+            <div class="reaction-options">
+                <button class="reaction-btn" data-emoji="❤️">❤️</button>
+                <button class="reaction-btn" data-emoji="😍">😍</button>
+                <button class="reaction-btn" data-emoji="😂">😂</button>
+                <button class="reaction-btn" data-emoji="🥺">🥺</button>
+                <button class="reaction-btn" data-emoji="🔥">🔥</button>
+                <button class="reaction-btn" data-emoji="👏">👏</button>
+            </div>
+        </div>
 
         <div class="quick-replies">
             <button class="quick-reply-btn" data-msg="I love you babuu ❤️">I love you babuu ❤️</button>
@@ -72,10 +135,20 @@
             <span id="recording-text">Recording 0:00</span>
         </div>
 
+        <!-- Session Timeout Warning -->
+        <div id="timeout-warning" class="timeout-warning hidden">
+            <div class="glass-panel timeout-box">
+                <p>Session expiring soon due to inactivity</p>
+                <button id="extend-session">Stay Online ❤️</button>
+            </div>
+        </div>
+
         <div class="input-area glass-panel">
             <div class="input-wrapper">
                 <button id="emoji-btn">😊</button>
                 <button id="mic-btn" aria-label="Record voice message">🎤</button>
+                <button id="image-btn" aria-label="Send image">📷</button>
+                <input type="file" id="image-input" accept="image/*" class="hidden">
                 <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off">
             </div>
             <button id="send-btn" aria-label="Send message">
@@ -88,6 +161,57 @@
             </button>
         </div>
     </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="settings-modal hidden">
+        <div class="glass-panel settings-box">
+            <div class="settings-header">
+                <h3>Settings ⚙️</h3>
+                <button id="close-settings">✕</button>
+            </div>
+            <div class="settings-content">
+                <div class="setting-item">
+                    <label class="setting-label">
+                        <span>🔊 Sound Effects</span>
+                        <input type="checkbox" id="sound-toggle" checked>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label class="setting-label">
+                        <span>🔔 Notifications</span>
+                        <input type="checkbox" id="notification-toggle" checked>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label class="setting-label">
+                        <span>📱 PIN Protection</span>
+                        <input type="checkbox" id="pin-toggle">
+                    </label>
+                </div>
+                <div class="setting-item pin-setting hidden" id="pin-setting-section">
+                    <label>Set PIN:</label>
+                    <div class="pin-setup-inputs">
+                        <input type="password" maxlength="1" class="pin-setup-digit" data-index="0">
+                        <input type="password" maxlength="1" class="pin-setup-digit" data-index="1">
+                        <input type="password" maxlength="1" class="pin-setup-digit" data-index="2">
+                        <input type="password" maxlength="1" class="pin-setup-digit" data-index="3">
+                    </div>
+                    <button id="save-pin-btn" class="save-pin-btn">Save PIN</button>
+                </div>
+                <div class="setting-item">
+                    <button id="clear-drafts-btn" class="settings-action-btn">Clear All Drafts</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio Elements for Sound Effects -->
+    <audio id="sound-message" preload="auto">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUqXh8bllHAU1kNbxz4AzBCh7zPPdhzsIHGu98+OWT" type="audio/wav">
+    </audio>
+    <audio id="sound-notification" preload="auto">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUqXh8bllHAU1kNbxz4AzBCh7zPPdhzsIHGu98+OWT" type="audio/wav">
+    </audio>
 
     <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
     <script src="/socket.io/socket.io.js"></script>
